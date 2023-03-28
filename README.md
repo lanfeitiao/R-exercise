@@ -1,2 +1,2 @@
-# R-exercise-
+# R-exercise
 Some exercises for learning R 
