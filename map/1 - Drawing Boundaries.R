@@ -61,7 +61,7 @@ map %+% europe +
   coord_sf(xlim = c(2500000, 6000000), ylim =c(1150000, 5500000), 
            crs = 3035)
 # Conterminous USA in the USA Contiguous Albers Equal Area Conic CRS (EPSG 102003)
-map %+% united.states + coord_sf(crs = 102003)
+map %+% united.states + coord_sf(crs = 'ESRI:102003')
 
 
 
