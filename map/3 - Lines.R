@@ -27,8 +27,23 @@ flights.jfk.long <- pivot_longer(flights.jfk.counted,
 flights.jfk.long <- left_join(flights.jfk.long, airports, by = c("airport" = "faa"))
 # Filter out the airports with missing data, and remove Honolulu (it is the only non-conterminous airport in the data)
 flights.jfk.long <- filter(flights.jfk.long, !(id %in% c("JFK-STT", "JFK-SJU", "JFK-PSE", "JFK-BQN", "JFK-HNL")))
+# Convert to sf
+destinations.jfk.sf <- st_as_sf(flights.jfk.long, coords = c("lon", "lat"))
+# Group and summarise to combine the points of each origin-destination pair. Keep the total number of flights on each route by taking the mean (the origin and destination of each route have the same number for this)
+destinations.jfk.sf.grouped <- group_by(destinations.jfk.sf, id) %>%
+  summarise(total = mean(total))
+# Convert the MULTIPOINT to LINESTRING
+destinations.sf.lines <- st_cast(destinations.jfk.sf.grouped, "LINESTRING")
+# Set the CRS
+st_crs(destinations.sf.lines) <- 4326
+# Load state boundaries
+united.states <- ne_states(country = "United States of America", returnclass = "sf")
+# Filter out the the conterminous USA
+usa.conterm <- filter(united.states, name != "Alaska", name != "Hawaii")
 
-
-
-
-
+# Plot the routes map
+ggplot(data = usa.conterm) +
+  geom_sf(color = "#ffffff") +
+  geom_sf(data = destinations.sf.lines, color = alpha("#D81E90",0.3), aes(linewidth = total)) +
+  coord_sf(crs = 'ESRI:102003') +
+  theme_minimal()
